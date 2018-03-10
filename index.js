@@ -1,34 +1,29 @@
-const TOKEN = process.env.TELEGRAM_TOKEN || '52681063:AAGrnlmboAdbvVO1cZaUqoNjlj5eQR1TUSM';
-const url = 'https://ec2-18-197-196-123.eu-central-1.compute.amazonaws.com/';
-const port = 3000;
+const TelegramBot = require('node-telegram-bot-api');
 
-const TelegramBot = require('../..');
-const express = require('express');
-const bodyParser = require('body-parser');
+// replace the value below with the Telegram token you receive from @BotFather
+const token = '552681063:AAGrnlmboAdbvVO1cZaUqoNjlj5eQR1TUSM';
 
-// No need to pass any parameters as we will handle the updates with Express
-const bot = new TelegramBot(TOKEN);
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, {polling: true});
 
-// This informs the Telegram servers of the new webhook.
-bot.setWebHook(`${url}/bot${TOKEN}`);
+// Matches "/echo [whatever]"
+bot.onText(/\/echo (.+)/, (msg, match) => {
+  // 'msg' is the received Message from Telegram
+  // 'match' is the result of executing the regexp above on the text content
+  // of the message
 
-const app = express();
+  const chatId = msg.chat.id;
+  const resp = match[1]; // the captured "whatever"
 
-// parse the updates to JSON
-app.use(bodyParser.json());
-
-// We are receiving updates at the route below!
-app.post(`/bot${TOKEN}`, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
+  // send back the matched "whatever" to the chat
+  bot.sendMessage(chatId, resp);
 });
 
-// Start Express Server
-app.listen(port, () => {
-  console.log(`Express server is listening on ${port}`);
-});
+// Listen for any kind of message. There are different kinds of
+// messages.
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
 
-// Just to ping!
-bot.on('message', msg => {
-  bot.sendMessage(msg.chat.id, 'I am alive!');
+  // send a message to the chat acknowledging receipt of their message
+  bot.sendMessage(chatId, 'Денис хватит бухать');
 });
